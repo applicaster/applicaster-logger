@@ -9,10 +9,10 @@ module Applicaster
     class Formatter < ::Logger::Formatter
       include LogStashLogger::TaggedLogging::Formatter
 
-      attr_accessor :facility
+      attr_accessor :default_fields
 
       def initialize(options = {})
-        @facility = options[:facility]
+        @default_fields = options.dup
         @datetime_format = nil
       end
 
@@ -40,7 +40,9 @@ module Applicaster
         event[:host] ||= HOST
         event[:application] ||= Rails.application.config.applicaster_logger.application_name
         event[:environment] ||= Rails.env
-        event[:facility] ||= facility
+        default_fields.each do |field, value|
+          event[field] = value
+        end
 
         current_tags.each do |tag|
           event.tag(tag)
