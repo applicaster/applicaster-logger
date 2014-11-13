@@ -11,6 +11,7 @@ module Applicaster
         {
           params: event.payload[:params].except('controller', 'action', 'format'),
           facility: "action_controller",
+          user_id: event.payload[:user_id],
         }
       end
     end
