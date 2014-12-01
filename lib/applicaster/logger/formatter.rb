@@ -41,7 +41,7 @@ module Applicaster
         event[:application] ||= Rails.application.config.applicaster_logger.application_name
         event[:environment] ||= Rails.env
         default_fields.each do |field, value|
-          event[field] = value
+          event[field] ||= value
         end
 
         current_tags.each do |tag|
