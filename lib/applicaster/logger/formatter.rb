@@ -40,6 +40,11 @@ module Applicaster
         event[:host] ||= HOST
         event[:application] ||= Rails.application.config.applicaster_logger.application_name
         event[:environment] ||= Rails.env
+
+        if Applicaster::Logger.current_request_uuid
+          event[:request_uuid] ||= Applicaster::Logger.current_request_uuid
+        end
+
         default_fields.each do |field, value|
           event[field] ||= value
         end

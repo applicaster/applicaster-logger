@@ -14,6 +14,9 @@ module Applicaster
           user_id: event.payload[:user_id],
         }
       end
+
+      app.middleware.insert_after ActionDispatch::RequestId,
+        Applicaster::Rack::RequestUuid
     end
 
     def self.setup_logger(app)
@@ -30,6 +33,19 @@ module Applicaster
         Delayed::Worker.logger.formatter =
           Applicaster::Logger::Formatter.new(facility: "delayed_job")
       end
+    end
+
+    def self.with_request_uuid(uuid)
+      old, Thread.current[:logger_request_uuid] =
+        Thread.current[:logger_request_uuid], uuid
+
+      yield
+    ensure
+      Thread.current[:logger_request_uuid] = old
+    end
+
+    def self.current_request_uuid
+      Thread.current[:logger_request_uuid]
     end
   end
 end
