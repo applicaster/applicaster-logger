@@ -33,6 +33,12 @@ module Applicaster
         Delayed::Worker.logger.formatter =
           Applicaster::Logger::Formatter.new(facility: "delayed_job")
       end
+      if defined?(Sidekiq)
+        Sidekiq::Logging.logger = LogStashLogger.new(logstash_config)
+        Sidekiq::Logging.logger.level = app.config.applicaster_logger.level
+        Sidekiq::Logging.logger.formatter =
+          Applicaster::Logger::Formatter.new(facility: "sidekiq")
+      end
     end
 
     def self.with_request_uuid(uuid)
