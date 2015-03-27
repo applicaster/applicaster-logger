@@ -33,11 +33,16 @@ module Applicaster
         Delayed::Worker.logger.formatter =
           Applicaster::Logger::Formatter.new(facility: "delayed_job")
       end
+
       if defined?(Sidekiq)
-        Sidekiq::Logging.logger = LogStashLogger.new(logstash_config)
-        Sidekiq::Logging.logger.level = app.config.applicaster_logger.level
-        Sidekiq::Logging.logger.formatter =
-          Applicaster::Logger::Formatter.new(facility: "sidekiq")
+        Sidekiq.configure_server do |config|
+          config.server_middleware do |chain|
+            chain.remove Sidekiq::Middleware::Server::Logging
+            chain.add Sidekiq::Middleware::Server::LogstashLogging
+          end
+        end
+      end
+
       if defined?(Sidetiq)
         Sidetiq.logger = LogStashLogger.new(logstash_config)
         Sidetiq.logger.level = app.config.applicaster_logger.level
