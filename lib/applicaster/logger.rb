@@ -38,6 +38,11 @@ module Applicaster
         Sidekiq::Logging.logger.level = app.config.applicaster_logger.level
         Sidekiq::Logging.logger.formatter =
           Applicaster::Logger::Formatter.new(facility: "sidekiq")
+      if defined?(Sidetiq)
+        Sidetiq.logger = LogStashLogger.new(logstash_config)
+        Sidetiq.logger.level = app.config.applicaster_logger.level
+        Sidetiq.logger.formatter =
+          Applicaster::Logger::Formatter.new(facility: "sidetiq")
       end
     end
 
