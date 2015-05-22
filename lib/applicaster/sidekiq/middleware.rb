@@ -14,7 +14,7 @@ module Sidekiq
                 context: context,
                 worker: worker.class.to_s,
                 queue: queue,
-                params: item['args'],
+                args: item['args'],
                 latency: Sidekiq::Job.new(Sidekiq.dump_json(item)).latency,
                 memory: memory
               }))
@@ -31,7 +31,7 @@ module Sidekiq
                 context: context,
                 worker: worker.class.to_s,
                 queue: queue,
-                params: item['args'],
+                args: item['args'],
                 runtime: elapsed(start),
                 memory: memory
               }))
@@ -44,7 +44,7 @@ module Sidekiq
                 context: context,
                 worker: worker.class.to_s,
                 queue: queue,
-                params: item['args'],
+                args: item['args'],
                 runtime: elapsed(start),
                 exception_class: e.class.to_s,
                 exception_message: e.message,
