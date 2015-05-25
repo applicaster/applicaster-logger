@@ -16,7 +16,7 @@ module Applicaster
                   worker: worker.class.to_s,
                   queue: queue,
                   args: item['args'],
-                  latency: ::Sidekiq::Job.new(Sidekiq.dump_json(item)).latency,
+                  latency: ::Sidekiq::Job.new(::Sidekiq.dump_json(item)).latency,
                   memory: memory
                 }))
 
