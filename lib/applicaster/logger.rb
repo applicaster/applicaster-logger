@@ -34,10 +34,10 @@ module Applicaster
           Applicaster::Logger::Formatter.new(facility: "delayed_job")
       end
 
-      if defined?(Sidekiq)
-        Sidekiq.configure_server do |config|
+      if defined?(::Sidekiq)
+        ::Sidekiq.configure_server do |config|
           config.server_middleware do |chain|
-            chain.remove Sidekiq::Middleware::Server::Logging
+            chain.remove ::Sidekiq::Middleware::Server::Logging
             chain.add Applicaster::Sidekiq::Middleware::Server::LogstashLogging
           end
         end
