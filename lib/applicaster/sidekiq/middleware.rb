@@ -5,7 +5,7 @@ module Applicaster
         class LogstashLogging
 
           def call(worker, item, queue)
-            Sidekiq::Logging.with_context("#{worker.class.to_s} JID-#{item['jid']}") do
+            ::Sidekiq::Logging.with_context("#{worker.class.to_s} JID-#{item['jid']}") do
               begin
                 logger.info(filter_fields({
                   message: "Start: #{worker.class.to_s} JID-#{item['jid']}",
@@ -16,7 +16,7 @@ module Applicaster
                   worker: worker.class.to_s,
                   queue: queue,
                   args: item['args'],
-                  latency: Sidekiq::Job.new(Sidekiq.dump_json(item)).latency,
+                  latency: ::Sidekiq::Job.new(Sidekiq.dump_json(item)).latency,
                   memory: memory
                 }))
 
