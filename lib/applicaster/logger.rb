@@ -12,6 +12,7 @@ module Applicaster
           params: event.payload[:params].except('controller', 'action', 'format'),
           facility: "action_controller",
           user_id: event.payload[:user_id],
+          remote_ip: event.payload[:remote_ip],
         }
       end
 
