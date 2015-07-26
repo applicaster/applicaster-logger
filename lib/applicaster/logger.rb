@@ -16,7 +16,7 @@ module Applicaster
       end
 
       app.middleware.insert_after ActionDispatch::RequestId,
-        Applicaster::Rack::RequestUuid
+        Applicaster::Rack::RequestData
     end
 
     def self.setup_logger(app)
@@ -53,17 +53,17 @@ module Applicaster
       end
     end
 
-    def self.with_request_uuid(uuid)
-      old, Thread.current[:logger_request_uuid] =
-        Thread.current[:logger_request_uuid], uuid
+    def self.with_thread_data(data)
+      old, Thread.current[:logger_thread_data] =
+        Thread.current[:logger_thread_data], data
 
       yield
     ensure
-      Thread.current[:logger_request_uuid] = old
+      Thread.current[:logger_thread_data] = old
     end
 
-    def self.current_request_uuid
-      Thread.current[:logger_request_uuid]
+    def self.current_thread_data
+      Thread.current[:logger_thread_data] || {}
     end
   end
 end

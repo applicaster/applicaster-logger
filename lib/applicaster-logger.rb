@@ -1,3 +1,3 @@
 require 'applicaster/logger'
-require "applicaster/rack/request_uuid"
+require "applicaster/rack/request_data"
 require "applicaster/sidekiq/middleware"
