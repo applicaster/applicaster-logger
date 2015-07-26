@@ -40,6 +40,7 @@ module Applicaster
         event[:host] ||= HOST
         event[:application] ||= Rails.application.config.applicaster_logger.application_name
         event[:environment] ||= Rails.env
+        event[:token] = ENV['LOGZIO_TOKEN'] if ENV['LOGZIO_TOKEN']
 
         if Applicaster::Logger.current_request_uuid
           event[:request_uuid] ||= Applicaster::Logger.current_request_uuid
