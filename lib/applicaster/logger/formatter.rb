@@ -42,8 +42,8 @@ module Applicaster
         event[:environment] ||= Rails.env
         event[:token] = ENV['LOGZIO_TOKEN'] if ENV['LOGZIO_TOKEN']
 
-        if Applicaster::Logger.current_request_uuid
-          event[:request_uuid] ||= Applicaster::Logger.current_request_uuid
+        Applicaster::Logger.current_thread_data.each do |field, value|
+          event[field] = value
         end
 
         default_fields.each do |field, value|
