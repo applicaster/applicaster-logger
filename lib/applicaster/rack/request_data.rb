@@ -16,6 +16,7 @@ module Applicaster
         {
           request_uuid: request.uuid,
           remote_ip: request.remote_ip,
+          request_host: request.host,
         }
       end
     end
