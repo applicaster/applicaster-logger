@@ -15,7 +15,7 @@ module Applicaster
                   context: context,
                   worker: worker.class.to_s,
                   queue: queue,
-                  args: item['args'],
+                  args: item['args'].inspect,
                   latency: ::Sidekiq::Job.new(::Sidekiq.dump_json(item)).latency,
                   memory: memory
                 }))
@@ -32,7 +32,7 @@ module Applicaster
                   context: context,
                   worker: worker.class.to_s,
                   queue: queue,
-                  args: item['args'],
+                  args: item['args'].inspect,
                   runtime: elapsed(start),
                   memory: memory
                 }))
@@ -45,7 +45,7 @@ module Applicaster
                   context: context,
                   worker: worker.class.to_s,
                   queue: queue,
-                  args: item['args'],
+                  args: item['args'].inspect,
                   runtime: elapsed(start),
                   exception_class: e.class.to_s,
                   exception_message: e.message,
