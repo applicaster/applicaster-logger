@@ -4,12 +4,15 @@ require "applicaster/logger/formatter"
 
 module Applicaster
   module Logger
+    # taken from https://github.com/rails/rails/blob/master/actionpack/lib/action_controller/log_subscriber.rb
+    INTERNAL_PARAMS = %w(controller action format only_path)
+
     def self.setup_lograge(app)
       app.config.lograge.enabled = true
       app.config.lograge.formatter = Lograge::Formatters::Logstash.new
       app.config.lograge.custom_options = lambda do |event|
         {
-          params: event.payload[:params].except('controller', 'action', 'format'),
+          params: event.payload[:params].except(*INTERNAL_PARAMS).inspect,
           facility: "action_controller",
           user_id: event.payload[:user_id],
         }
