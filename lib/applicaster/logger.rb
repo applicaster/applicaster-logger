@@ -14,7 +14,7 @@ module Applicaster
         {
           params: event.payload[:params].except(*INTERNAL_PARAMS).inspect,
           facility: "action_controller",
-          user_id: event.payload[:user_id],
+          custom_params: event.payload[:custom_params],
         }
       end
 
