@@ -54,6 +54,8 @@ module Applicaster
                 }))
 
                 raise e
+              ensure
+                logger.device.close
               end
             end
           end
