@@ -47,6 +47,13 @@ And then execute:
   ```
   defaults to: `Rails.application.class.parent.to_s.underscore`
 
+4. To activate `Start/Done` lines for each worker instantiation (turned off by default)
+  ```ruby
+  # config/environments/production.rb
+  MyApp::Application.configure do
+    config.applicaster_logger.verbose = true
+  end
+
 ## Contributing
 
 1. Fork it
