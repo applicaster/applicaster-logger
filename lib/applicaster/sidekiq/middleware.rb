@@ -18,7 +18,7 @@ module Applicaster
                   args: item['args'].inspect,
                   latency: ::Sidekiq::Job.new(::Sidekiq.dump_json(item)).latency,
                   memory: memory
-                }))
+                })) if verbose?
 
                 start = Time.now
 
@@ -35,7 +35,7 @@ module Applicaster
                   args: item['args'].inspect,
                   runtime: elapsed(start),
                   memory: memory
-                }))
+                })) if verbose?
               rescue Exception => e
                 logger.error(filter_fields({
                   message: "Fail: #{worker.class.to_s} JID-#{item['jid']}",
@@ -102,6 +102,10 @@ module Applicaster
             end
 
             data
+          end
+
+          def verbose?
+            ::Rails.application.config.applicaster_logger.verbose
           end
         end
       end
