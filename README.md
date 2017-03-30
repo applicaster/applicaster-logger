@@ -52,7 +52,7 @@ And then execute:
   ```ruby
   # config/environments/production.rb
   MyApp::Application.configure do
-    config.applicaster_logger.sidekiq_level = Logger::ERROR # Logger::DEBUG etc..
+    config.applicaster_logger.sidekiq_log_level = Logger::ERROR # Logger::DEBUG etc..
   end
   ```
   defaults to `applicaster_logger.level`
