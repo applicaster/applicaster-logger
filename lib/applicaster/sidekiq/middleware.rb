@@ -65,7 +65,7 @@ module Applicaster
               begin
                 applicaster_logger = ::Rails.application.config.applicaster_logger
                 logger = LogStashLogger.new(applicaster_logger.logstash_config)
-                logger.level = applicaster_logger.level
+                logger.level = applicaster_logger.sidekiq_level || applicaster_logger.level
                 logger.formatter = Applicaster::Logger::Formatter.new(facility: "sidekiq")
                 logger
               end

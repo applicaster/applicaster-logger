@@ -47,6 +47,16 @@ And then execute:
   ```
   defaults to: `Rails.application.class.parent.to_s.underscore`
 
+4. To separately control the Sidekiq logging level:
+
+  ```ruby
+  # config/environments/production.rb
+  MyApp::Application.configure do
+    config.applicaster_logger.sidekiq_level = Logger::ERROR # Logger::DEBUG etc..
+  end
+  ```
+  defaults to `applicaster_logger.level`
+
 ## Contributing
 
 1. Fork it
