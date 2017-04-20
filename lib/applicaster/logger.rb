@@ -10,6 +10,7 @@ module Applicaster
     def self.setup_lograge(app)
       app.config.lograge.enabled = true
       app.config.lograge.formatter = Lograge::Formatters::Logstash.new
+      app.config.lograge.log_level = :debug
       app.config.lograge.custom_options = lambda do |event|
         {
           params: event.payload[:params].except(*INTERNAL_PARAMS).inspect,
@@ -24,7 +25,6 @@ module Applicaster
 
     def self.setup_logger(app)
       logstash_config = app.config.applicaster_logger.logstash_config
-
       app.config.logger = LogStashLogger.new(logstash_config)
       app.config.logger.level = app.config.applicaster_logger.level
       app.config.logger.formatter =
