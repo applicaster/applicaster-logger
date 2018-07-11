@@ -38,12 +38,22 @@ module Applicaster
       end
 
       if defined?(::Sidekiq)
-        require 'sidekiq/api'
-
         ::Sidekiq.configure_server do |config|
-          config.server_middleware do |chain|
-            chain.remove ::Sidekiq::Middleware::Server::Logging
-            chain.add Applicaster::Sidekiq::Middleware::Server::LogstashLogging
+          config.error_handlers.delete_if { |h| h.is_a?(::Sidekiq::ExceptionHandler::Logger) }
+          ::Sidekiq.error_handlers << Applicaster::Sidekiq::ExceptionLogger.new
+
+          if Gem::Version.new(::Sidekiq::VERSION) < Gem::Version.new("5.0")
+            require 'sidekiq/api'
+            config.server_middleware do |chain|
+              chain.remove ::Sidekiq::Middleware::Server::Logging
+              chain.add Applicaster::Sidekiq::Middleware::Server::LogstashLogging
+            end
+          else
+            logger = LogStashLogger.new(logstash_config)
+            logger.level = app.config.applicaster_logger.level
+            logger.formatter = Applicaster::Logger::Formatter.new(facility: "sidekiq")
+            ::Sidekiq::Logging.logger = logger
+            ::Sidekiq.options[:job_logger] = ::Applicaster::Sidekiq::JobLogger
           end
         end
       end
