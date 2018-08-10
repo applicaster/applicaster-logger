@@ -84,7 +84,7 @@ module Applicaster
     # grapheme clusters ("perceptual characters") by truncating at combining
     # characters.
     # Code taken from activesupport/lib/active_support/core_ext/string/filters.rb
-    def truncate_bytes(text, truncate_at, omission: "…")
+    def truncate_bytes(text, truncate_at, omission: "...")
       omission ||= ""
 
       case
