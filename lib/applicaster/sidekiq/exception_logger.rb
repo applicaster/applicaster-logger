@@ -8,7 +8,7 @@ module Applicaster
         event = log_context(item, queue).merge({
           message: "Fail: #{item['class']} JID-#{item['jid']}",
           exception_class: exception.class.to_s,
-          exception_message: exception.message.to_s,
+          exception_message: Applicaster::Logger.truncate_bytes(exception.message.to_s, 500),
         })
         logger.info(event)
       end
