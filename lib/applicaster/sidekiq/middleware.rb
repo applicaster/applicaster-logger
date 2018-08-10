@@ -48,7 +48,7 @@ module Applicaster
                   args: item['args'].inspect,
                   runtime: elapsed(start),
                   exception_class: e.class.to_s,
-                  exception_message: Applicaster::Logger.truncate_bytes(e.message.to_s, 500)
+                  exception_message: Applicaster::Logger.truncate_bytes(e.message.to_s, 500),
                   memory: memory
                 }))
 
