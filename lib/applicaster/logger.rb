@@ -24,30 +24,10 @@ module Applicaster
 
     def self.setup_logger(app)
       logstash_config = app.config.applicaster_logger.logstash_config
-
-      app.config.logger = LogStashLogger.new(logstash_config)
-      app.config.logger.level = app.config.applicaster_logger.level
-      app.config.logger.formatter =
-        Applicaster::Logger::Formatter.new(facility: "rails_logger")
-
-      if defined?(Delayed)
-        Delayed::Worker.logger = LogStashLogger.new(logstash_config)
-        Delayed::Worker.logger.level = app.config.applicaster_logger.level
-        Delayed::Worker.logger.formatter =
-          Applicaster::Logger::Formatter.new(facility: "delayed_job")
-      end
-
-      logger = LogStashLogger.new(logstash_config)
-      logger.level = app.config.applicaster_logger.level
-      logger.formatter = Applicaster::Logger::Formatter.new(facility: "sidekiq")
-      Applicaster::Logger::Sidekiq.setup(logger)
-
-      if defined?(Sidetiq)
-        Sidetiq.logger = LogStashLogger.new(logstash_config)
-        Sidetiq.logger.level = app.config.applicaster_logger.level
-        Sidetiq.logger.formatter =
-          Applicaster::Logger::Formatter.new(facility: "sidetiq")
-      end
+      app.config.logger = new_logger("rails_logger")
+      Applicaster::Logger::Sidekiq.setup(new_logger("sidekiq")) if defined?(::Sidekiq)
+      Sidetiq.logger = new_logger("sidetiq") if defined?(Sidetiq)
+      Delayed::Worker.logger = new_logger("sidekiq") if defined?(Delayed)
     end
 
     def self.with_thread_data(data)
@@ -92,6 +72,14 @@ module Applicaster
 
           cut << omission
         end
+      end
+    end
+
+    def self.new_logger(facility)
+      config = ::Rails.application.config.applicaster_logger
+      LogStashLogger.new(config.logstash_config).tap do |logger|
+        logger.level = config.applicaster_logger.level
+        logger.formatter = Applicaster::Logger::Formatter.new(facility: "rails_logger")
       end
     end
   end
