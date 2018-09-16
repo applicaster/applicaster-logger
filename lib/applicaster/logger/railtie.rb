@@ -5,11 +5,15 @@ require 'logstash-logger'
 module Applicaster
   module Logger
     class Railtie < Rails::Railtie
-      config.applicaster_logger = ActiveSupport::OrderedOptions.new
-      config.applicaster_logger.enabled = false
-      config.applicaster_logger.level = ::Logger::INFO
-      config.applicaster_logger.logstash_config = { type: :stdout }
-      config.applicaster_logger.application_name = Rails.application.class.parent.to_s.underscore
+      DEFAULT_APP_NAME = Rails.application.class.parent.to_s.underscore
+
+      config.applicaster_logger = ActiveSupport::OrderedOptions.new.tap do |config|
+        uri = ENV["LOGSTASH_URI"]
+        config.enabled = uri.present?
+        config.level = ::Logger::INFO
+        config.application_name = ENV.fetch("LOG_APP_NAME") { DEFAULT_APP_NAME }
+        config.logstash_config = uri.present? ? { uri: uri } : { type: :stdout }
+      end
 
       initializer :applicaster_logger_lograge, before: :lograge do |app|
         setup_lograge(app) if app.config.applicaster_logger.enabled
