@@ -13,6 +13,7 @@ module Applicaster
         config.level = ::Logger::INFO
         config.application_name = ENV.fetch("LOG_APP_NAME") { DEFAULT_APP_NAME }
         config.logstash_config = uri.present? ? { uri: uri } : { type: :stdout }
+        config.logzio_token = ENV['LOGZIO_TOKEN'].presence
       end
 
       initializer :applicaster_logger_lograge, before: :lograge do |app|
@@ -49,10 +50,20 @@ module Applicaster
       def new_logger(facility)
         config = ::Rails.application.config.applicaster_logger
         LogStashLogger.new(config.logstash_config).tap do |logger|
-          puts "new logger for #{facility}: #{logger}"
           logger.level = config.level
-          logger.formatter = Applicaster::Logger::Formatter.new(facility: facility)
+
+          logger.formatter = Applicaster::Logger::Formatter.new(
+            default_fields.merge({ facility: facility })
+          )
         end
+      end
+
+      def default_fields
+        config = ::Rails.application.config.applicaster_logger
+        {
+          application: config.application_name,
+          environment: Rails.env.to_s
+        }.merge(config.logzio_token ? { token: config.logzio_token } : {})
       end
     end
   end

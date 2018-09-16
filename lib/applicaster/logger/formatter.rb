@@ -23,7 +23,7 @@ module Applicaster
       protected
 
       def build_event(message, severity, time)
-        data = JSON.parse(message).symbolize_keys rescue nil if message.is_a?(String)
+        data = JSON.parse(message).symbolize_keys rescue nil if message.try(:start_with?, "{")
         data ||= message
 
         event =
@@ -38,9 +38,6 @@ module Applicaster
 
         event[:severity] ||= severity
         event[:host] ||= HOST
-        event[:application] ||= Rails.application.config.applicaster_logger.application_name
-        event[:environment] ||= Rails.env
-        event[:token] = ENV['LOGZIO_TOKEN'] if ENV['LOGZIO_TOKEN']
 
         Applicaster::Logger.current_thread_data.each do |field, value|
           event[field] = value
