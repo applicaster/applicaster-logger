@@ -17,45 +17,30 @@ module Applicaster
       end
 
       def call(severity, time, progname, message)
-        build_event(message, severity, time)
+        data = message_to_data(message).
+          merge({ severity: severity, host: HOST }).
+          merge(Applicaster::Logger.current_thread_data).
+          reverse_merge(default_fields)
+
+        event = LogStash::Event.new(data)
+        event.timestamp = time.utc.iso8601(3)
+        event.tags = current_tags
+        "#{event.to_json}\n"
       end
 
       protected
 
-      def build_event(message, severity, time)
-        data = JSON.parse(message).symbolize_keys rescue nil if message.try(:start_with?, "{")
-        data ||= message
-
-        event =
-          case data
-          when LogStash::Event
-            data.clone
-          when Hash
-            LogStash::Event.new(data.merge("@timestamp" => time))
-          else
-            LogStash::Event.new(message: msg2str(data), "@timestamp" => time)
-          end
-
-        event[:severity] ||= severity
-        event[:host] ||= HOST
-
-        Applicaster::Logger.current_thread_data.each do |field, value|
-          event[field] = value
+      def message_to_data(message)
+        case message
+        when Hash
+          message.dup
+        when LogStash::Event
+          message.to_hash
+        when /^\{/
+          JSON.parse(message).symbolize_keys rescue { message: msg2str(message) }
+        else
+          { message: msg2str(message) }
         end
-
-        default_fields.each do |field, value|
-          event[field] ||= value
-        end
-
-        current_tags.each do |tag|
-          event.tag(tag)
-        end
-
-        # In case Time#to_json has been overridden
-        if event.timestamp.is_a?(Time)
-          event.timestamp = event.timestamp.iso8601(3)
-        end
-        "#{event.to_json}\n"
       end
     end
   end
