@@ -1,6 +1,7 @@
 require 'rails/railtie'
 require 'lograge'
 require 'logstash-logger'
+require_relative "./lograge/formatter"
 
 module Applicaster
   module Logger
@@ -34,11 +35,10 @@ module Applicaster
 
       def setup_lograge(app)
         app.config.lograge.enabled = true
-        app.config.lograge.formatter = Lograge::Formatters::Logstash.new
+        app.config.lograge.formatter = Applicaster::Logger::Lograge::Formatter.new
         app.config.lograge.custom_options = lambda do |event|
           {
             params: event.payload[:params].except(*INTERNAL_PARAMS).inspect,
-            facility: "action_controller",
             custom_params: event.payload[:custom_params],
           }
         end
