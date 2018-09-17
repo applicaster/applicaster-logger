@@ -13,15 +13,16 @@ module Applicaster
       attr_accessor :default_fields
 
       def initialize(options = {})
-        @default_fields = options.dup
+        @default_fields = options.with_indifferent_access
         @datetime_format = nil
       end
 
       def call(severity, time, progname, message)
-        data = message_to_data(message).
+        data =
+          default_fields.
+          deep_merge(message_to_data(message)).
           merge({ severity: severity, host: HOST }).
-          deep_merge(Applicaster::Logger::ThreadContext.current).
-          reverse_merge(default_fields)
+          deep_merge(Applicaster::Logger::ThreadContext.current)
 
         event = LogStash::Event.new(data)
         event.timestamp = time.utc.iso8601(3)
