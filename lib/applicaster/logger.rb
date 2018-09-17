@@ -1,25 +1,13 @@
-require "applicaster/logger/version"
-require "applicaster/logger/railtie"
-require "applicaster/logger/formatter"
+require_relative "./logger/formatter"
+require_relative "./logger/rack"
+require_relative "./logger/railtie"
+require_relative "./logger/sidekiq"
+require_relative "./logger/thread_context"
+require_relative "./logger/version"
+
 
 module Applicaster
   module Logger
-    # taken from https://github.com/rails/rails/blob/master/actionpack/lib/action_controller/log_subscriber.rb
-    INTERNAL_PARAMS = %w(controller action format only_path)
-
-    def self.with_thread_data(data)
-      old, Thread.current[:logger_thread_data] =
-        Thread.current[:logger_thread_data], data
-
-      yield
-    ensure
-      Thread.current[:logger_thread_data] = old
-    end
-
-    def self.current_thread_data
-      Thread.current[:logger_thread_data] || {}
-    end
-
     # Truncates +text+ to at most <tt>bytesize</tt> bytes in length without
     # breaking string encoding by splitting multibyte characters or breaking
     # grapheme clusters ("perceptual characters") by truncating at combining

@@ -1,6 +1,7 @@
 require 'logger'
 require 'socket'
 require 'time'
+require 'logstash-logger'
 
 module Applicaster
   module Logger
@@ -19,7 +20,7 @@ module Applicaster
       def call(severity, time, progname, message)
         data = message_to_data(message).
           merge({ severity: severity, host: HOST }).
-          merge(Applicaster::Logger.current_thread_data).
+          deep_merge(Applicaster::Logger::ThreadContext.current).
           reverse_merge(default_fields)
 
         event = LogStash::Event.new(data)
@@ -33,13 +34,13 @@ module Applicaster
       def message_to_data(message)
         case message
         when Hash
-          message.dup
+          message.with_indifferent_access
         when LogStash::Event
-          message.to_hash
+          message.to_hash.with_indifferent_access
         when /^\{/
-          JSON.parse(message).symbolize_keys rescue { message: msg2str(message) }
+          JSON.parse(message).with_indifferent_access rescue { message: msg2str(message) }
         else
-          { message: msg2str(message) }
+          { message: msg2str(message) }.with_indifferent_access
         end
       end
     end

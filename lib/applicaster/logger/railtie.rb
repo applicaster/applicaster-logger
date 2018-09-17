@@ -7,6 +7,9 @@ module Applicaster
     class Railtie < Rails::Railtie
       DEFAULT_APP_NAME = Rails.application.class.parent.to_s.underscore
 
+      # taken from https://github.com/rails/rails/blob/master/actionpack/lib/action_controller/log_subscriber.rb
+      INTERNAL_PARAMS = %w(controller action format only_path)
+
       config.applicaster_logger = ActiveSupport::OrderedOptions.new.tap do |config|
         uri = ENV["LOGSTASH_URI"]
         config.enabled = uri.present?
@@ -14,6 +17,11 @@ module Applicaster
         config.application_name = ENV.fetch("LOG_APP_NAME") { DEFAULT_APP_NAME }
         config.logstash_config = uri.present? ? { uri: uri } : { type: :stdout }
         config.logzio_token = ENV['LOGZIO_TOKEN'].presence
+      end
+
+      initializer :applicaster_logger_rack do |app|
+        app.middleware.insert 0, Applicaster::Logger::Rack::ThreadContext
+        app.middleware.insert_after ActionDispatch::RequestId, Applicaster::Logger::Rack::RequestData
       end
 
       initializer :applicaster_logger_lograge, before: :lograge do |app|
@@ -34,9 +42,6 @@ module Applicaster
             custom_params: event.payload[:custom_params],
           }
         end
-
-        app.middleware.insert_after ActionDispatch::RequestId,
-          Applicaster::Rack::RequestData
       end
 
       def setup_logger(app)
