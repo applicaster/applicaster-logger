@@ -1,6 +1,7 @@
 require 'logger'
 require 'socket'
 require 'time'
+require 'logstash-logger'
 
 module Applicaster
   module Logger
@@ -12,53 +13,36 @@ module Applicaster
       attr_accessor :default_fields
 
       def initialize(options = {})
-        @default_fields = options.dup
+        @default_fields = options.with_indifferent_access
         @datetime_format = nil
       end
 
       def call(severity, time, progname, message)
-        build_event(message, severity, time)
+        data =
+          default_fields.
+          deep_merge(message_to_data(message)).
+          merge({ severity: severity, host: HOST }).
+          deep_merge(Applicaster::Logger::ThreadContext.current)
+
+        event = LogStash::Event.new(data)
+        event.timestamp = time.utc.iso8601(3)
+        event.tags = current_tags
+        "#{event.to_json}\n"
       end
 
       protected
 
-      def build_event(message, severity, time)
-        data = JSON.parse(message).symbolize_keys rescue nil if message.is_a?(String)
-        data ||= message
-
-        event =
-          case data
-          when LogStash::Event
-            data.clone
-          when Hash
-            LogStash::Event.new(data.merge("@timestamp" => time))
-          else
-            LogStash::Event.new(message: msg2str(data), "@timestamp" => time)
-          end
-
-        event[:severity] ||= severity
-        event[:host] ||= HOST
-        event[:application] ||= Rails.application.config.applicaster_logger.application_name
-        event[:environment] ||= Rails.env
-        event[:token] = ENV['LOGZIO_TOKEN'] if ENV['LOGZIO_TOKEN']
-
-        Applicaster::Logger.current_thread_data.each do |field, value|
-          event[field] = value
+      def message_to_data(message)
+        case message
+        when Hash
+          message.with_indifferent_access
+        when LogStash::Event
+          message.to_hash.with_indifferent_access
+        when /^\{/
+          JSON.parse(message).with_indifferent_access rescue { message: msg2str(message) }
+        else
+          { message: msg2str(message) }.with_indifferent_access
         end
-
-        default_fields.each do |field, value|
-          event[field] ||= value
-        end
-
-        current_tags.each do |tag|
-          event.tag(tag)
-        end
-
-        # In case Time#to_json has been overridden
-        if event.timestamp.is_a?(Time)
-          event.timestamp = event.timestamp.iso8601(3)
-        end
-        "#{event.to_json}\n"
       end
     end
   end

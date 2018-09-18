@@ -25,6 +25,8 @@ And then execute:
   end
   ```
 
+  defaults to: `ENV["LOGSTASH_URI"].present?`
+
 2. Configuring logstash output:
 
   ```ruby
@@ -33,9 +35,10 @@ And then execute:
     config.applicaster_logger.logstash_config = { type: :redis }
   end
   ```
-  defaults to: `{ type: :stdout }`
+  
+  defaults to: `{ uri: ENV["LOGSTASH_URI"] }` if `LOGSTASH_URI` is set or `{ type: :stdout }` otherwise
 
-  For availible options see: https://github.com/dwbutler/logstash-logger#basic-usage
+  For available options see: https://github.com/dwbutler/logstash-logger#basic-usage
 
 3. To set the application name:
 
