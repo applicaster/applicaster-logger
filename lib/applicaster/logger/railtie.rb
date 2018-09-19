@@ -17,7 +17,7 @@ module Applicaster
           config.enabled = uri.present?
           config.level = ::Logger::INFO
           config.application_name = ENV.fetch("LOG_APP_NAME", &DEFAULT_APP_NAME)
-          config.logstash_config = uri.present? ? { uri: uri } : { type: :stdout }
+          config.logstash_config = uri.present? ? Railtie.uri_logstash_config(uri) : { type: :stdout }
           config.logzio_token = ENV['LOGZIO_TOKEN'].presence
         end
       end
@@ -33,6 +33,14 @@ module Applicaster
 
       initializer :applicaster_logger, before: :initialize_logger do |app|
         setup_logger(app) if app.config.applicaster_logger.enabled
+      end
+
+      def self.uri_logstash_config(uri)
+        parsed = ::URI.parse(uri)
+        # params parsing can be removed if this is merged:
+        # https://github.com/dwbutler/logstash-logger/pull/148
+        params = Hash[CGI.parse(parsed.query.to_s).map {|k,v| [k,v.first]}]
+        { uri: uri, buffer_max_items: Integer(params["buffer_max_items"] || 1000)}
       end
 
       def setup_lograge(app)
