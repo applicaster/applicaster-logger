@@ -30,7 +30,6 @@ module Applicaster
             message: "Fail: #{item_class_name(item)} JID-#{item['jid']}",
             sidekiq: {
               event: "exception",
-              runtime: opts.fetch(:runtime),
               exception_class: exception.class.to_s,
               exception_message: Applicaster::Logger.truncate_bytes(exception.message.to_s, 500),
             }

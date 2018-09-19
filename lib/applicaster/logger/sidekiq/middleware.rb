@@ -16,8 +16,7 @@ module Applicaster
               runtime = elapsed(start)
               logger.info(done_event(item, runtime: runtime))
             rescue Exception => exception
-              runtime = elapsed(start)
-              logger.error(exception_event(item, exception: exception, runtime: runtime))
+              logger.error(exception_event(item, exception: exception))
               raise exception
             end
 

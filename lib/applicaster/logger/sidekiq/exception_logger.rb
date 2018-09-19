@@ -13,7 +13,7 @@ module Applicaster
 
           logger.error(
             job_context(item, queue).
-              deep_merge(exception_event(item, exception: exception, runtime: runtime))
+              deep_merge(exception_event(item, exception: exception))
           )
         end
       end
