@@ -6,18 +6,20 @@ require_relative "./lograge/formatter"
 module Applicaster
   module Logger
     class Railtie < Rails::Railtie
-      DEFAULT_APP_NAME = Rails.application.class.parent.to_s.underscore
+      DEFAULT_APP_NAME = proc { Rails.application.class.parent.to_s.underscore }
 
       # taken from https://github.com/rails/rails/blob/master/actionpack/lib/action_controller/log_subscriber.rb
       INTERNAL_PARAMS = %w(controller action format only_path)
 
-      config.applicaster_logger = ActiveSupport::OrderedOptions.new.tap do |config|
-        uri = ENV["LOGSTASH_URI"]
-        config.enabled = uri.present?
-        config.level = ::Logger::INFO
-        config.application_name = ENV.fetch("LOG_APP_NAME") { DEFAULT_APP_NAME }
-        config.logstash_config = uri.present? ? { uri: uri } : { type: :stdout }
-        config.logzio_token = ENV['LOGZIO_TOKEN'].presence
+      ActiveSupport.on_load(:before_configuration) do
+        config.applicaster_logger = ActiveSupport::OrderedOptions.new.tap do |config|
+          uri = ENV["LOGSTASH_URI"]
+          config.enabled = uri.present?
+          config.level = ::Logger::INFO
+          config.application_name = ENV.fetch("LOG_APP_NAME", &DEFAULT_APP_NAME)
+          config.logstash_config = uri.present? ? { uri: uri } : { type: :stdout }
+          config.logzio_token = ENV['LOGZIO_TOKEN'].presence
+        end
       end
 
       initializer :applicaster_logger_rack do |app|
