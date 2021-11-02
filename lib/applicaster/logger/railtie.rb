@@ -6,7 +6,7 @@ require_relative "./lograge/formatter"
 module Applicaster
   module Logger
     class Railtie < Rails::Railtie
-      DEFAULT_APP_NAME = proc { Rails.application.class.parent.to_s.underscore }
+      DEFAULT_APP_NAME = proc { Rails.application.class.module_parent.to_s.underscore }
 
       # taken from https://github.com/rails/rails/blob/master/actionpack/lib/action_controller/log_subscriber.rb
       INTERNAL_PARAMS = %w(controller action format only_path)
